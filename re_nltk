@@ -1,0 +1,109 @@
+import os
+os.getcwd()
+os.chdir('/TextAnalytics')
+
+# Read data from a csv file, row by row
+# Question: What happens if you drop utf-8 encoding?
+
+import csv
+# We can also load the entire file into a pandas dataframe
+
+import pandas as pd 
+df = pd.read_csv('research.csv', delimiter="\t")
+ 
+df.head(3)
+df.shape
+df
+
+text = []
+textstring =''
+
+for i in df.index:
+    textstring = textstring + ' ' + df.loc[i]
+    text.append(df.loc[i]) 
+
+textstring
+text
+len(text)
+
+sentence = ''.join(map(str, text))
+sentence = sentence.replace('International Conference on Innovative Computing and Communication (ICICC 2020)', '')
+sentence
+
+#nltk.download('punkt')
+#nltk.download('stopwords')
+#nltk.download('wordnet')
+
+import nltk
+sentences = nltk.tokenize.sent_tokenize(sentence)
+print(sentences)
+len(sentences)
+
+
+
+# From original corpus of words, filter our non-aplphabetic words
+
+words1 = nltk.tokenize.word_tokenize(sentence)
+print(words1[:200])
+
+words1 = [w for w in words1 if w.isalpha()]
+print(words1[:200])
+
+words1 = [w.lower() for w in words1]
+print(words1[:200])
+len(words1)
+
+# Filter out stopwords
+
+stop_words = nltk.corpus.stopwords.words('english')
+#print(stop_words)
+#len(stop_words)
+
+nltk.FreqDist(words1)
+words = [w for w in words1 if w not in stop_words]
+#print(words[:100])
+nltk.FreqDist(words)
+len(words)
+
+removewords = ['name', 'dtype', 'object', 'https', 'one','give', 'author']
+for word in list(words):
+    if word in removewords:
+        words.remove(word)
+    if len(word) <3:
+        words.remove(word)
+        
+from nltk.stem.lancaster import LancasterStemmer
+st = LancasterStemmer()
+
+words_stemmed=[]
+for word in list(words):
+    words_stemmed.append(st.stem(word))
+    
+from nltk.stem.porter import PorterStemmer
+st = PorterStemmer()
+
+words_stemmed_p=[]
+for word in list(words):
+    words_stemmed_p.append(st.stem(word))
+
+data_lem_vocab_freq_words = nltk.FreqDist(words_stemmed)
+title_string="Top 5 words"
+data_lem_vocab_freq_words.plot(25, cumulative=False, title=title_string)
+
+data_lem_vocab_freq_words = nltk.FreqDist(words_stemmed_p)
+title_string="Top 5 words"
+data_lem_vocab_freq_words.plot(25, cumulative=False, title=title_string)
+
+#Lemmatizer gives better results in this case
+from nltk.stem import WordNetLemmatizer
+wordnet_lemmatizer = WordNetLemmatizer()
+
+words_stemmed_lem=[]
+for word in list(words):
+    words_stemmed_lem.append(wordnet_lemmatizer.lemmatize(word))
+    
+data_lem_vocab_freq_words = nltk.FreqDist(words_stemmed_lem)
+title_string="Top 40 words"
+data_lem_vocab_freq_words.plot(40, cumulative=False, title=title_string)
+
+#More analysis to come
